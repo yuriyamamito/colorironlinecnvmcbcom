@@ -1,0 +1,56 @@
+EULA (End User License Agreement) - Carro Nuvem Titulos
+Version 1.0.16 
+
+DEFINITIONS
+
+The Carro Nuvem Titulos is a typeface created in house for exclusive for internal use of carronuvem-cb.com
+
+carronuvem-cb.com was created on November, 30, 2020
+
+"User" Any people or entiety who acess the carronuvem-cb.com to see the page, acess web, or printing
+
+LICENSE GRANTING
+
+View the Carro Nuvem Titulos, source on carronuvem-cb.com 's official websites, social media, and content at GitHub.
+
+Interact with the source in web environments (e.g., website pages, online activities, blog).
+
+Reproduce the source only as part of the official carronuvem-cb.com content , in image format (PNG, JPEG, SVG) or browser rendering.
+
+LICENSE RESTRICTIONS
+
+Download, extract, copy, redistribute or store the font file (.ttf, .otf, .woff, etc.).
+
+Use the font in personal, commercial, third-party projects or in any other website, application or software.
+
+Modify, decompile, reverse engineer, or create derivative works of the source.
+
+Offer the font for download, sale, trade or free distribution.
+
+Using the font in design platforms (Canva, Figma, Adobe, etc.) without express written permission.
+
+IP - ALLOWANCE
+
+Carro Nuvem Titulos is an exclusive asset of carronuvem-cb.com .
+
+Nothing in this license transfers to the User any ownership rights in the font.
+
+Permitted Use (Exclusively in the carronuvem-cb.com Ecosystem)
+The User may:
+
+See source at:
+
+Official website:carronuvem-cb.com
+Blog, activities, podcast, social networks (TikTok, Instagram, Facebook, Bluesky, etc.).
+
+Online activities (e.g. Coloring Online).
+
+Share rendered images of the source (e.g., screenshot of a post), as long as:
+
+The image is used for non-commercial purposes.
+
+Credit to carronuvem-cb.com is maintained.
+
+Do not attempt to extract the source of the image
+
+Copyright 2020-2025 carronuvem-cb.com
