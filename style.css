@@ -161,7 +161,7 @@ body {
             gap: 15px;
             width: 100%;
             justify-content: center;
-            font-family: Gotham Rounded Medium, Nunito, Helvetica Neue, Helvetica, Arial, sans-serif;
+            font-family: "Gotham Rounded Medium", Nunito, Helvetica Neue, Helvetica, Arial, sans-serif;
         }
         
         .upload-section input[type="text"] {
@@ -170,7 +170,7 @@ body {
             padding: 10px;
             border-radius: 30px;
             border: 1px solid #550e9b;
-            font-family: Gotham Rounded Medium, Nunito, Helvetica Neue, Helvetica, Arial, sans-serif;
+            font-family: "Gotham Rounded Medium", Nunito, Helvetica Neue, Helvetica, Arial, sans-serif;
         }
         
         .upload-section button {
@@ -628,6 +628,7 @@ body {
             box-shadow: 0 5px 15px rgba(0,0,0,0.3);
 
         }
+
 
 
 
