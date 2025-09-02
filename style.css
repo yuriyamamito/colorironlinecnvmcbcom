@@ -27,7 +27,7 @@
 }
 @font-face {
     font-family: "Carro Nuvem Titulos 500", Nunito, Helvetica Neue, Helvetica, Arial, sans-serif;
-    src: url("./files/fonts/CarroNuvem-Titulos.") format("opentype");
+    src: url("./files/fonts/CarroNuvem-Titulos.otf") format("opentype");
     font-weight: 700;
     font-style: normal;
 }
@@ -627,3 +627,4 @@ body {
             box-shadow: 0 5px 15px rgba(0,0,0,0.3);
 
         }
+
