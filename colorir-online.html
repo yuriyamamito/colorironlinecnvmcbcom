@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplicativo de Colorir</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
+    <!-- Add Google Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <meta name="theme-color" content="#550e9b">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Barra lateral de ferramentas -->
+    <div class="sidebar">
+        <div class="sidebar-tools">
+            <div class="sidebar-tool selected" id="brush-tool">
+                <span class="material-icons">brush</span>
+                <span class="sidebar-tool-text">Pincel</span>
+            </div>
+            <div class="sidebar-tool" id="bucket-tool">
+                <span class="material-icons">format_color_fill</span>
+                <span class="sidebar-tool-text">Balde de Tinta</span>
+            </div>
+            
+            <div class="sidebar-divider"></div>
+            
+            <div class="sidebar-tool" id="undo-btn" title="Desfazer (Ctrl+Z)">
+                <span class="material-icons">undo</span>
+                <span class="sidebar-tool-text">Desfazer</span>
+            </div>
+            <div class="sidebar-tool" id="redo-btn" title="Refazer (Ctrl+Y)">
+                <span class="material-icons">redo</span>
+                <span class="sidebar-tool-text">Refazer</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Conteúdo principal -->
+    <div class="main-content">
+        <div class="container">
+            <h1>Vamos Colorir online!</h1>
+            
+            <div class="upload-section">
+                <div class="file-upload-btn">
+                    <button>
+                        <span class="material-icons">file_upload</span> Escolher Arquivo
+                    </button>
+                    <input type="file" id="pdf-upload" accept=".pdf">
+                </div>
+                <p>Ou solte o arquivo PDF aqui</p>
+                <div class="url-input-container" id="url-container">
+                    <input type="text" id="pdf-url" placeholder="Insira a URL da atividade do hub carronuvem-cb.com!">
+                    <button id="fetch-pdf-btn">
+                        <span class="material-icons">cloud_download</span> Importar PDF
+                    </button>
+                </div>
+            </div>
+            
+            <div class="controls" id="pdf-controls" style="display: none;">
+                <button id="prev-page">
+                    <span class="material-icons">navigate_before</span> Página Anterior
+                </button>
+                <span id="page-info">Página 1 de 1</span>
+                <button id="next-page">
+                    Próxima Página <span class="material-icons">navigate_next</span>
+                </button>
+            </div>
+            
+            <div class="canvas-container">
+                <canvas id="pdf-canvas"></canvas>
+            </div>
+            
+            <div class="tools">
+                <!-- Seletor de cores personalizado -->
+                <div class="custom-color-picker">
+                    <button class="color-picker-button" id="color-picker-btn">
+                        <div class="color-preview" id="color-preview"></div>
+                        <span>Cor Personalizada</span>
+                        <span class="material-icons">colorize</span>
+                    </button>
+                    
+                    <div class="color-picker-popup" id="color-picker-popup">
+                        <div class="color-picker-header">
+                            <div class="color-picker-title">Selecionar Cor</div>
+                            <button class="close-picker" id="close-picker">
+                                <span class="material-icons">close</span>
+                            </button>
+                        </div>
+                        
+                        <div class="color-input-group">
+                            <label>Cor:</label>
+                            <input type="color" id="native-color-picker" value="#000000">
+                            <input type="text" id="color-hex" value="#000000" placeholder="#000000">
+                        </div>
+                        
+                        <div class="preset-colors" id="preset-colors"></div>
+                    </div>
+                </div>
+                
+                <!-- Controle de espessura do pincel -->
+                <div class="brush-size-control">
+                    <label for="brush-size">Espessura:</label>
+                    <input type="range" id="brush-size" class="brush-size-slider" min="1" max="20" value="5">
+                    <span id="brush-size-value" class="brush-size-value">5</span>
+                </div>
+                
+                <button id="clear-btn">
+                    <span class="material-icons">clear</span> Limpar Seleção
+                </button>
+                <button id="download-btn">
+                    <span class="material-icons">download</span> Baixar Imagem
+                </button>
+            </div>
+            
+            <h2>Paleta de Cores (24 cores)</h2>
+            <div class="color-palette" id="color-palette"></div>
+        </div>
+    </div>
+    
+    <!-- Indicador de carregamento -->
+    <div class="loading-indicator" id="loading-indicator">
+        <div class="spinner"></div>
+        <div class="loading-text">Processando...</div>
+    </div>
+
+    <script>
+        // Configuração do PDF.js
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js';
+        
+        // Variáveis globais
+        let pdfDoc = null;
+        let pageNum = 1;
+        let pageRendering = false;
+        let pageNumPending = null;
+        let scale = 1.5;
+        let canvas = document.getElementById('pdf-canvas');
+        let ctx = canvas.getContext('2d');
+        let selectedColor = '#000000';
+        let isDrawing = false;
+        let lastX = 0;
+        let lastY = 0;
+        let currentTool = 'brush'; // 'brush' ou 'bucket'
+        let brushSize = 5;
+        
+        // Histórico para desfazer/refazer
+        let history = [];
+        let historyStep = -1;
+        const maxHistorySteps = 50;
+        
+        // Paleta de 24 cores
+        const colors = [
+            '#FF0000', '#FF9900', '#FFFF00', '#00FF00', '#00FFFF', '#0000FF', 
+            '#FF00FF', '#800080', '#A52A2A', '#FFD700', '#FFA500', '#FFFFE0', 
+            '#000000', '#FFFFFF', '#FF1493', '#8A2BE2', '#5F9EA0', '#7FFF00', 
+            '#DC143C', '#FF8C00', '#FFDAB9', '#ADFF2F', '#4B0082', '#FF4500'
+        ];
+        
+        // Cores pré-definidas para o seletor personalizado
+        const presetColors = [
+            '#FF0000', '#FF4500', '#FF8C00', '#FFA500', '#FFD700', '#FFFF00',
+            '#ADFF2F', '#7FFF00', '#00FF00', '#00FFFF', '#00CED1', '#0000FF',
+            '#4B0082', '#8A2BE2', '#9400D3', '#FF00FF', '#FF1493', '#FF69B4',
+            '#C71585', '#DC143C', '#B22222', '#8B0000', '#000000', '#FFFFFF',
+            '#D3D3D3', '#A9A9A9', '#808080', '#696969', '#556B2F', '#8FBC8F',
+            '#2E8B57', '#3CB371', '#20B2AA', '#008B8B', '#008080', '#4682B4'
+        ];
+        
+        // Função para normalizar e validar a URL
+        function normalizeAndValidateUrl(url) {
+            // Remover espaços em branco
+            url = url.trim();
+            
+            // Se não tiver protocolo, adicionar https://
+            if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                url = 'https://' + url;
+            }
+            
+            try {
+                const urlObj = new URL(url);
+                
+                // Verificar se o domínio é carronuvem-cb.com (com ou sem www)
+                const domain = urlObj.hostname.toLowerCase();
+                const isValidDomain = domain === 'carronuvem-cb.com' || 
+                                    domain === 'www.carronuvem-cb.com';
+                
+                if (!isValidDomain) {
+                    throw new Error('Apenas URLs do domínio carronuvem-cb.com são permitidas.');
+                }
+                
+                // Garantir que use HTTPS
+                if (urlObj.protocol !== 'https:') {
+                    urlObj.protocol = 'https:';
+                }
+                
+                return urlObj.toString();
+            } catch (e) {
+                throw new Error('URL inválida. ' + e.message);
+            }
+        }
+        
+        // Função para validar e atualizar a interface do campo de URL
+        function validateUrlInput() {
+            const urlInput = document.getElementById('pdf-url');
+            const urlContainer = document.getElementById('url-container');
+            const url = urlInput.value.trim();
+            
+            // Remover classes anteriores
+            urlContainer.classList.remove('valid-domain', 'invalid-domain');
+            
+            if (!url) {
+                return; // Não fazer nada se estiver vazio
+            }
+            
+            try {
+                normalizeAndValidateUrl(url);
+                urlContainer.classList.add('valid-domain');
+            } catch (e) {
+                urlContainer.classList.add('invalid-domain');
+            }
+        }
+        
+        // Inicializar a paleta de cores em círculo
+        function initColorPalette() {
+            const palette = document.getElementById('color-palette');
+            const radius = 120; // Raio do círculo
+            const centerX = 150; // Centro X do círculo
+            const centerY = 150; // Centro Y do círculo
+            
+            colors.forEach((color, index) => {
+                const colorDiv = document.createElement('div');
+                colorDiv.className = 'color-option';
+                colorDiv.style.backgroundColor = color;
+                colorDiv.dataset.color = color;
+                
+                // Calcular posição no círculo
+                const angle = (index / colors.length) * 2 * Math.PI;
+                const x = centerX + radius * Math.cos(angle) - 20; // -20 para centralizar o elemento
+                const y = centerY + radius * Math.sin(angle) - 20; // -20 para centralizar o elemento
+                
+                colorDiv.style.left = `${x}px`;
+                colorDiv.style.top = `${y}px`;
+                
+                colorDiv.addEventListener('click', function() {
+                    selectedColor = this.dataset.color;
+                    updateSelectedColor();
+                });
+                
+                palette.appendChild(colorDiv);
+            });
+            
+            // Inicializar cores pré-definidas no seletor personalizado
+            const presetContainer = document.getElementById('preset-colors');
+            presetColors.forEach(color => {
+                const colorDiv = document.createElement('div');
+                colorDiv.className = 'preset-color';
+                colorDiv.style.backgroundColor = color;
+                colorDiv.dataset.color = color;
+                
+                colorDiv.addEventListener('click', function() {
+                    selectedColor = this.dataset.color;
+                    document.getElementById('native-color-picker').value = selectedColor;
+                    document.getElementById('color-hex').value = selectedColor;
+                    updateSelectedColor();
+                });
+                
+                presetContainer.appendChild(colorDiv);
+            });
+            
+            // Selecionar a primeira cor por padrão
+            if (palette.firstChild) {
+                palette.firstChild.click();
+            }
+        }
+        
+        // Atualizar a cor selecionada na interface
+        function updateSelectedColor() {
+            // Atualizar visualização no botão do seletor
+            document.getElementById('color-preview').style.backgroundColor = selectedColor;
+            
+            // Atualizar seleção na paleta
+            document.querySelectorAll('.color-option').forEach(opt => {
+                opt.classList.remove('selected');
+                if (opt.dataset.color === selectedColor) {
+                    opt.classList.add('selected');
+                }
+            });
+            
+            // Atualizar inputs do seletor personalizado
+            document.getElementById('native-color-picker').value = selectedColor;
+            document.getElementById('color-hex').value = selectedColor;
+        }
+        
+        // Renderizar a página do PDF
+        function renderPage(num) {
+            pageRendering = true;
+            
+            pdfDoc.getPage(num).then(function(page) {
+                const viewport = page.getViewport({ scale: scale });
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+                
+                const renderContext = {
+                    canvasContext: ctx,
+                    viewport: viewport
+                };
+                
+                const renderTask = page.render(renderContext);
+                
+                renderTask.promise.then(function() {
+                    pageRendering = false;
+                    if (pageNumPending !== null) {
+                        renderPage(pageNumPending);
+                        pageNumPending = null;
+                    }
+                    
+                    // Adicionar texto da página
+                    document.getElementById('page-info').textContent = 
+                        `Página ${num} de ${pdfDoc.numPages}`;
+                    
+                    // Salvar estado inicial no histórico
+                    saveState();
+                });
+            });
+        }
+        
+        // Navegar para outra página
+        function queueRenderPage(num) {
+            if (pageRendering) {
+                pageNumPending = num;
+            } else {
+                renderPage(num);
+            }
+            pageNum = num;
+        }
+        
+        // Página anterior
+        function onPrevPage() {
+            if (pageNum <= 1) {
+                return;
+            }
+            pageNum--;
+            queueRenderPage(pageNum);
+        }
+        
+        // Próxima página
+        function onNextPage() {
+            if (pageNum >= pdfDoc.numPages) {
+                return;
+            }
+            pageNum++;
+            queueRenderPage(pageNum);
+        }
+        
+        // Lidar com upload de PDF
+        function handlePDFUpload(file) {
+            if (file.type !== 'application/pdf') {
+                alert('Por favor, selecione um arquivo PDF.');
+                return;
+            }
+            
+            showLoading();
+            
+            const fileReader = new FileReader();
+            
+            fileReader.onload = function() {
+                const typedArray = new Uint8Array(this.result);
+                
+                pdfjsLib.getDocument(typedArray).promise.then(function(pdf) {
+                    pdfDoc = pdf;
+                    document.getElementById('pdf-controls').style.display = 'flex';
+                    renderPage(pageNum);
+                    hideLoading();
+                }).catch(error => {
+                    alert('Erro ao carregar o PDF: ' + error.message);
+                    hideLoading();
+                });
+            };
+            
+            fileReader.readAsArrayBuffer(file);
+        }
+        
+        // Lidar com URL de PDF
+        function handlePDFUrl(url) {
+            showLoading();
+            
+            pdfjsLib.getDocument(url).promise.then(function(pdf) {
+                pdfDoc = pdf;
+                document.getElementById('pdf-controls').style.display = 'flex';
+                renderPage(pageNum);
+                hideLoading();
+            }).catch(function(error) {
+                alert('Erro ao carregar o PDF. Verifique a URL e tente novamente.');
+                hideLoading();
+            });
+        }
+        
+        // Mostrar indicador de carregamento
+        function showLoading() {
+            document.getElementById('loading-indicator').classList.add('active');
+        }
+        
+        // Esconder indicador de carregamento
+        function hideLoading() {
+            document.getElementById('loading-indicator').classList.remove('active');
+        }
+        
+        // Salvar estado atual no histórico
+        function saveState() {
+            // Limitar o tamanho do histórico
+            if (historyStep < history.length - 1) {
+                history = history.slice(0, historyStep + 1);
+            }
+            
+            // Adicionar novo estado
+            history.push(canvas.toDataURL());
+            
+            // Limitar o número máximo de estados
+            if (history.length > maxHistorySteps) {
+                history.shift();
+            } else {
+                historyStep++;
+            }
+            
+            // Atualizar estado dos botões
+            updateHistoryButtons();
+        }
+        
+        // Atualizar estado dos botões de histórico
+        function updateHistoryButtons() {
+            document.getElementById('undo-btn').disabled = historyStep <= 0;
+            document.getElementById('redo-btn').disabled = historyStep >= history.length - 1;
+        }
+        
+        // Desfazer última ação
+        function undo() {
+            if (historyStep > 0) {
+                historyStep--;
+                restoreState();
+            }
+        }
+        
+        // Refazer última ação desfeita
+        function redo() {
+            if (historyStep < history.length - 1) {
+                historyStep++;
+                restoreState();
+            }
+        }
+        
+        // Restaurar estado do histórico
+        function restoreState() {
+            const img = new Image();
+            img.src = history[historyStep];
+            img.onload = function() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(img, 0, 0);
+                updateHistoryButtons();
+            };
+        }
+        
+        // Configurar eventos de desenho
+        function setupDrawing() {
+            canvas.addEventListener('mousedown', handleMouseDown);
+            canvas.addEventListener('mousemove', handleMouseMove);
+            canvas.addEventListener('mouseup', handleMouseUp);
+            canvas.addEventListener('mouseout', handleMouseUp);
+        }
+        
+        function handleMouseDown(e) {
+            if (currentTool === 'brush') {
+                startDrawing(e);
+            } else if (currentTool === 'bucket') {
+                showLoading();
+                setTimeout(() => {
+                    floodFill(e.offsetX, e.offsetY, selectedColor);
+                    hideLoading();
+                    saveState(); // Salvar estado após preenchimento
+                }, 10);
+            }
+        }
+        
+        function handleMouseMove(e) {
+            if (currentTool === 'brush') {
+                draw(e);
+            }
+        }
+        
+        function handleMouseUp() {
+            if (currentTool === 'brush') {
+                stopDrawing();
+                saveState(); // Salvar estado após desenho
+            }
+        }
+        
+        function startDrawing(e) {
+            isDrawing = true;
+            [lastX, lastY] = [e.offsetX, e.offsetY];
+        }
+        
+        function draw(e) {
+            if (!isDrawing) return;
+            
+            ctx.strokeStyle = selectedColor;
+            ctx.lineJoin = 'round';
+            ctx.lineCap = 'round';
+            ctx.lineWidth = brushSize;
+            
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
+            ctx.lineTo(e.offsetX, e.offsetY);
+            ctx.stroke();
+            
+            [lastX, lastY] = [e.offsetX, e.offsetY];
+        }
+        
+        function stopDrawing() {
+            isDrawing = false;
+        }
+        
+        // Algoritmo de preenchimento (flood fill) otimizado
+        function floodFill(startX, startY, fillColor) {
+            // Obter dados de pixel do canvas
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const data = imageData.data;
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            // Converter a cor de preenchimento para RGBA
+            const fillRgb = hexToRgb(fillColor);
+            if (!fillRgb) return;
+            
+            // Obter a cor do pixel onde foi clicado
+            const startPos = (Math.floor(startY) * width + Math.floor(startX)) * 4;
+            const startR = data[startPos];
+            const startG = data[startPos + 1];
+            const startB = data[startPos + 2];
+            const startA = data[startPos + 3];
+            
+            // Se a cor de preenchimento for igual à cor do pixel, não faz nada
+            if (startR === fillRgb.r && startG === fillRgb.g && startB === fillRgb.b && startA === 255) {
+                return;
+            }
+            
+            // Função para verificar se a cor é considerada "branca" dentro de um contorno preto
+            function isWhiteInBlackOutline(r, g, b) {
+                // Verificar se o pixel é branco ou quase branco (com tolerância)
+                const isWhite = (r > 240 && g > 240 && b > 240);
+                
+                // Verificar se o pixel é preto ou quase preto (contorno)
+                const isBlack = (r < 30 && g < 30 && b < 30);
+                
+                // Se for branco ou preto, consideramos parte da área a ser preenchida
+                return isWhite || isBlack;
+            }
+            
+            // Implementação do flood fill usando pilha com otimizações
+            const stack = [[Math.floor(startX), Math.floor(startY)]];
+            const visited = new Set(); // Para evitar reprocessamento
+            const maxIterations = 500000; // Limite para evitar travamentos
+            let iterations = 0;
+            
+            while (stack.length && iterations < maxIterations) {
+                iterations++;
+                const [x, y] = stack.pop();
+                const key = `${x},${y}`;
+                
+                // Verificar se já visitou
+                if (visited.has(key)) continue;
+                visited.add(key);
+                
+                // Verificar se está dentro dos limites
+                if (x < 0 || x >= width || y < 0 || y >= height) {
+                    continue;
+                }
+                
+                const pos = (y * width + x) * 4;
+                const r = data[pos];
+                const g = data[pos + 1];
+                const b = data[pos + 2];
+                const a = data[pos + 3];
+                
+                // Verificar se o pixel deve ser preenchido
+                // Se for branco dentro de contorno preto OU se for a cor original
+                const shouldFill = isWhiteInBlackOutline(r, g, b) || 
+                                  (r === startR && g === startG && b === startB && a === startA);
+                
+                if (!shouldFill) {
+                    continue;
+                }
+                
+                // Preencher o pixel
+                data[pos] = fillRgb.r;
+                data[pos + 1] = fillRgb.g;
+                data[pos + 2] = fillRgb.b;
+                data[pos + 3] = 255; // Alpha (opacidade total)
+                
+                // Adicionar pixels vizinhos à pilha (em ordem cruz para melhor performance)
+                if (x + 1 < width) stack.push([x + 1, y]);
+                if (x - 1 >= 0) stack.push([x - 1, y]);
+                if (y + 1 < height) stack.push([x, y + 1]);
+                if (y - 1 >= 0) stack.push([x, y - 1]);
+            }
+            
+            // Atualizar o canvas com os pixels preenchidos
+            ctx.putImageData(imageData, 0, 0);
+            
+            // Feedback se atingiu o limite de iterações
+            if (iterations >= maxIterations) {
+                alert('A área é muito grande para preenchimento completo. Tente usar o pincel para áreas menores.');
+            }
+        }
+        
+        // Converter cor hexadecimal para RGB
+        function hexToRgb(hex) {
+            // Remove o # se existir
+            hex = hex.replace('#', '');
+            
+            // Converter para valores RGB
+            const r = parseInt(hex.substring(0, 2), 16);
+            const g = parseInt(hex.substring(2, 4), 16);
+            const b = parseInt(hex.substring(4, 6), 16);
+            
+            return { r, g, b };
+        }
+        
+        // Limpar desenhos
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            if (pdfDoc) {
+                renderPage(pageNum);
+            }
+            saveState(); // Salvar estado após limpar
+        }
+        
+        // Baixar imagem
+        function downloadImage() {
+            const link = document.createElement('a');
+            link.download = 'colorido.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+        
+        // Selecionar ferramenta
+        function selectTool(tool) {
+            currentTool = tool;
+            document.querySelectorAll('.sidebar-tool').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            document.getElementById(`${tool}-tool`).classList.add('selected');
+            
+            // Alterar cursor conforme a ferramenta
+            if (tool === 'brush') {
+                canvas.style.cursor = 'crosshair';
+            } else if (tool === 'bucket') {
+                canvas.style.cursor = 'pointer';
+            }
+        }
+        
+        // Event Listeners
+        document.getElementById('pdf-upload').addEventListener('change', function(e) {
+            if (e.target.files.length > 0) {
+                handlePDFUpload(e.target.files[0]);
+            }
+        });
+        
+        document.getElementById('fetch-pdf-btn').addEventListener('click', function() {
+            const urlInput = document.getElementById('pdf-url');
+            const url = urlInput.value.trim();
+            
+            if (!url) {
+                alert('Por favor, insira uma URL.');
+                return;
+            }
+            
+            try {
+                // Normalizar e validar a URL
+                const normalizedUrl = normalizeAndValidateUrl(url);
+                
+                // Exibir indicador de carregamento
+                const btn = this;
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<span class="material-icons">hourglass_empty</span> Carregando...';
+                btn.disabled = true;
+
+                // Fetch the PDF from the URL
+                fetch(normalizedUrl)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Erro ao carregar o PDF. Verifique a URL.');
+                        }
+                        return response.arrayBuffer();
+                    })
+                    .then(data => {
+                        const typedArray = new Uint8Array(data);
+                        return pdfjsLib.getDocument(typedArray).promise;
+                    })
+                    .then(function (pdf) {
+                        pdfDoc = pdf;
+                        document.getElementById('pdf-controls').style.display = 'flex';
+                        renderPage(pageNum);
+                    })
+                    .catch(error => {
+                        alert(error.message);
+                    })
+                    .finally(() => {
+                        // Restaurar botão
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
+                    });
+            } catch (error) {
+                alert(error.message);
+            }
+        });
+        
+        // Event listener para validação em tempo real do campo de URL
+        document.getElementById('pdf-url').addEventListener('input', validateUrlInput);
+        
+        document.getElementById('prev-page').addEventListener('click', onPrevPage);
+        document.getElementById('next-page').addEventListener('click', onNextPage);
+        document.getElementById('clear-btn').addEventListener('click', clearCanvas);
+        document.getElementById('download-btn').addEventListener('click', downloadImage);
+        
+        // Event listeners para as ferramentas na barra lateral
+        document.getElementById('brush-tool').addEventListener('click', () => selectTool('brush'));
+        document.getElementById('bucket-tool').addEventListener('click', () => selectTool('bucket'));
+        
+        // Event listeners para desfazer/refazer
+        document.getElementById('undo-btn').addEventListener('click', undo);
+        document.getElementById('redo-btn').addEventListener('click', redo);
+        
+        // Atalhos de teclado
+        document.addEventListener('keydown', function(e) {
+            // Ctrl+Z para desfazer
+            if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
+                e.preventDefault();
+                undo();
+            }
+            
+            // Ctrl+Y para refazer
+            if ((e.ctrlKey || e.metaKey) && e.key === 'y') {
+                e.preventDefault();
+                redo();
+            }
+        });
+        
+        // Event listeners para o seletor de cores personalizado
+        const colorPickerBtn = document.getElementById('color-picker-btn');
+        const colorPickerPopup = document.getElementById('color-picker-popup');
+        const closePickerBtn = document.getElementById('close-picker');
+        const nativeColorPicker = document.getElementById('native-color-picker');
+        const colorHexInput = document.getElementById('color-hex');
+        
+        // Abrir/fechar o seletor de cores
+        colorPickerBtn.addEventListener('click', function() {
+            colorPickerPopup.classList.toggle('active');
+        });
+        
+        closePickerBtn.addEventListener('click', function() {
+            colorPickerPopup.classList.remove('active');
+        });
+        
+        // Fechar o seletor ao clicar fora dele
+        document.addEventListener('click', function(e) {
+            if (!colorPickerBtn.contains(e.target) && !colorPickerPopup.contains(e.target)) {
+                colorPickerPopup.classList.remove('active');
+            }
+        });
+        
+        // Atualizar cor ao usar o seletor nativo
+        nativeColorPicker.addEventListener('input', function() {
+            selectedColor = this.value;
+            colorHexInput.value = this.value;
+            updateSelectedColor();
+        });
+        
+        // Atualizar cor ao digitar o valor hexadecimal
+        colorHexInput.addEventListener('input', function() {
+            const hexValue = this.value;
+            if (/^#[0-9A-F]{6}$/i.test(hexValue)) {
+                selectedColor = hexValue;
+                nativeColorPicker.value = hexValue;
+                updateSelectedColor();
+            }
+        });
+        
+        // Controle de espessura do pincel
+        const brushSizeInput = document.getElementById('brush-size');
+        const brushSizeValue = document.getElementById('brush-size-value');
+        
+        brushSizeInput.addEventListener('input', function() {
+            brushSize = this.value;
+            brushSizeValue.textContent = brushSize;
+        });
+        
+        // Drag and drop
+        const uploadSection = document.querySelector('.upload-section');
+        
+        uploadSection.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            this.style.borderColor = '#4CAF50';
+        });
+        
+        uploadSection.addEventListener('dragleave', function() {
+            this.style.borderColor = '#ccc';
+        });
+        
+        uploadSection.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.style.borderColor = '#ccc';
+            
+            if (e.dataTransfer.files.length > 0) {
+                handlePDFUpload(e.dataTransfer.files[0]);
+            }
+        });
+        
+        // Inicialização
+        initColorPalette();
+        setupDrawing();
+        updateHistoryButtons(); // Inicializar estado dos botões de histórico
+    </script>
+</body>
+</html>
