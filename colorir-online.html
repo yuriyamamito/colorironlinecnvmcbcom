@@ -8,9 +8,588 @@
     <!-- Add Google Material Icons -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <meta name="theme-color" content="#550e9b">
-    <link rel="stylesheet" href="http://api.carronuvem-cb.com/style.css">
     <link href="https://api.fontshare.com/v2/css?f[]=nunito@500,600,800&display=swap" rel="stylesheet">
+    <link href="https://db.onlinewebfonts.com/c/ae8f19f441b335c3fda30febf5069c5a?family=Gotham+Rounded+Bold" rel="stylesheet">
+    <link href="https://db.onlinewebfonts.com/c/dffb2b80813d195d26fa4d2aad48b059?family=Gotham+Rounded+Medium" rel="stylesheet">
 </head>
+    <style>
+        body {
+            font-family: HCo Gotham Rounded A, HCo Gotham Rounded B, Gotham Rounded Medium, Nunito, Helvetica Neue, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            display: flex;
+            min-height: 100vh;
+            color:#404040
+        }
+        
+        /* Barra lateral de ferramentas */
+        .sidebar {
+            width: 60px;
+            background-color: #550e9b;
+            transition: width 0.3s ease;
+            overflow: hidden;
+            position: fixed;
+            height: 100vh;
+            z-index: 1000;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        }
+        
+        .sidebar:hover {
+            width: 200px;
+        }
+        
+        .sidebar-tools {
+            display: flex;
+            flex-direction: column;
+            padding: 20px 0;
+        }
+        
+        .sidebar-tool {
+            display: flex;
+            align-items: center;
+            padding: 15px 10px;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            white-space: nowrap;
+        }
+        
+        .sidebar-tool:hover {
+            background-color: #6a0fbf;
+        }
+        
+        .sidebar-tool.selected {
+            background-color: #4a0c87;
+        }
+        
+        .sidebar-tool .material-icons {
+            font-size: 24px;
+            margin-right: 15px;
+            min-width: 24px;
+        }
+        
+        .sidebar-tool-text {
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-weight: 500;
+        }
+        
+        .sidebar:hover .sidebar-tool-text {
+            opacity: 1;
+        }
+        
+        /* Conteúdo principal */
+        .main-content {
+            margin-left: 60px;
+            flex: 1;
+            padding: 20px;
+            transition: margin-left 0.3s ease;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #550e9b;
+            font-family: "Carro Nuvem Titulos 500", Nunito, Helvetica Neue, Helvetica, Arial, sans-serif;
+        }
+        
+        .upload-section {
+            margin-bottom: 20px;
+            padding: 20px;
+            border: 2px dashed #ccc;
+            border-radius: 30px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            font-weight: 400;
+            font-family: "Gotham Rounded Medium", Nunito, Helvetica Neue, Helvetica, Arial, sans-serif;
+        }
+        
+        .upload-section .url-input-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            width: 100%;
+            justify-content: center;
+            font-family: "Gotham Rounded Medium", Nunito, Helvetica Neue, Helvetica, Arial, sans-serif;
+        }
+        
+        .upload-section input[type="text"] {
+            flex: 1;
+            max-width: 70%;
+            padding: 10px;
+            border-radius: 30px;
+            border: 1px solid #550e9b;
+            font-family: "Gotham Rounded Medium", Nunito, Helvetica Neue, Helvetica, Arial, sans-serif;
+        }
+        
+        .upload-section button {
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(85, 14, 155, 0.08);
+        }
+        button {
+            box-shadow: 0 2px 8px rgba(85, 14, 155, 0.08);
+        }
+        .color-picker-button {
+            box-shadow: 0 2px 8px rgba(85, 14, 155, 0.08);
+        }
+        p {
+            font-family: inherit;
+            font-weight: 400;
+            color:inherit;
+        }
+        .canvas-container {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        
+        #pdf-canvas {
+            border: 1px solid #ddd;
+            max-width: 100%;
+            cursor: crosshair;
+        }
+        
+        .color-palette {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 5px;
+            margin: 20px 0;
+        }
+        
+        .color-option {
+            width: 100%;
+            height: 40px;
+            border: 2px solid #fff;
+            cursor: pointer;
+            transition: transform 0.2s;
+            border-radius: 8px;
+        }
+        
+        .color-option:hover {
+            transform: scale(1.1);
+        }
+        
+        .color-option.selected {
+            border: 2px solid #000;
+            transform: scale(1.1);
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        
+        button {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 10px 15px;
+            background-color: #550e9b;
+            color: white;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 500;
+            font-family: "Gotham Rounded Medium", Nunito, Helvetica Neue, Helvetica, Arial, sans-serif;
+            transition: background-color 0.3s, box-shadow 0.3s ease-in-out;
+        }
+        
+        button:hover {
+            background-color: #6a0fbf;
+            box-shadow: 0 2px 0 #955ca3;
+        }
+        
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+        
+        #page-info {
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .tools {
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .tool-option {
+            padding: 10px 15px;
+            background-color: #ddd;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: background-color 0.3s, box-shadow 0.3s ease-in-out;
+        }
+        
+        .tool-option:hover {
+            background-color: #6a0fbf;
+            color: white;
+            box-shadow: 0 2px 0 #955ca3;
+        }
+        
+        .tool-option.selected {
+            background-color: #550e9b;
+            color: white;
+        }
+        
+        .material-icons {
+            font-size: 18px;
+        }
+        
+        /* Estilos para o seletor de cores personalizado */
+        .custom-color-picker {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .color-picker-button {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 15px;
+            background-color: #550e9b;
+            color: white;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 500;
+            font-family: "Gotham Rounded Medium", Nunito, Helvetica Neue, Helvetica, Arial, sans-serif;
+            transition: background-color 0.3s, box-shadow 0.3s ease-in-out;
+        }
+        
+        .color-picker-button:hover {
+            background-color: #6a0fbf;
+            box-shadow: 0 2px 0 #955ca3;
+        }
+        
+        .color-preview {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 0 2px rgba(0,0,0,0.3);
+        }
+        
+        .color-picker-popup {
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-top: 10px;
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            padding: 15px;
+            z-index: 1000;
+            display: none;
+            width: 388px; /* maior que a paleta */
+            min-width: 310px;
+            max-width: 95vw;
+        }
+        
+        .color-picker-popup.active {
+            display: block;
+        }
+        
+        .color-picker-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .color-picker-title {
+            font-weight: 700;
+            color: #333;
+        }
+        
+        .close-picker {
+            background: none;
+            border: none;
+            color: #777;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s, box-shadow 0.3s ease-in-out;
+        }
+        
+        .close-picker:hover {
+            background-color: #f0f0f0;
+            color: #333;
+            box-shadow: 0 2px 0 #955ca3;
+        }
+        
+        .color-input-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .color-input-group label {
+            font-weight: 600;
+            color: #555;
+        }
+        
+        .color-input-group input[type="color"] {
+            width: 50px;
+            height: 40px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: box-shadow 0.3s ease-in-out;
+        }
+        
+        .color-input-group input[type="color"]:hover {
+            box-shadow: 0 2px 0 #955ca3;
+        }
+        
+        .color-input-group input[type="text"] {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            font-family: 'Gotham Rounded Medium', sans-serif;
+            transition: box-shadow 0.3s ease-in-out;
+        }
+        
+        .color-input-group input[type="text"]:hover {
+            box-shadow: 0 4px 0 #955ca3;
+        }
+        
+        .preset-colors {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 8px;
+            margin-top: 15px;
+        }
+        
+        .preset-color {
+            width: 100%;
+            aspect-ratio: 1/1;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: transform 0.2s, border-color 0.2s, box-shadow 0.3s ease-in-out;
+        }
+        
+        .preset-color:hover {
+            transform: scale(1.1);
+            border-color: #550e9b;
+            box-shadow: 0 4px 0 #955ca3;
+        }
+        
+        /* Controle de espessura do pincel */
+        .brush-size-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-left: 10px;
+        }
+        
+        .brush-size-control label {
+            font-weight: 700;
+            color: #555;
+        }
+        
+        .brush-size-slider {
+            width: 100px;
+            height: 6px;
+            border-radius: 3px;
+            background: #ddd;
+            outline: none;
+            transition: box-shadow 0.3s ease-in-out;
+        }
+        
+        .brush-size-slider:hover {
+            box-shadow: 0 2px 0 #955ca3;
+        }
+        
+        .brush-size-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #550e9b;
+            cursor: pointer;
+            transition: box-shadow 0.3s ease-in-out;
+        }
+        
+        .brush-size-slider::-webkit-slider-thumb:hover {
+            box-shadow: 0 4px 0 #955ca3;
+        }
+        
+        .brush-size-slider::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #550e9b;
+            cursor: pointer;
+            border: none;
+            transition: box-shadow 0.3s ease-in-out;
+        }
+        
+        .brush-size-slider::-moz-range-thumb:hover {
+            box-shadow: 0 4px 0 #955ca3;
+        }
+        
+        .brush-size-value {
+            font-weight: 700;
+            min-width: 25px;
+            text-align: center;
+            color: #550e9b;
+        }
+        
+        /* Indicador de carregamento */
+        .loading-indicator {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        
+        .loading-indicator.active {
+            display: flex;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            margin-bottom: 15px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .loading-text {
+            color: white;
+            font-weight: 700;
+            font-size: 18px;
+        }
+        
+        /* Estilo para o botão de upload de arquivo */
+        .file-upload-btn {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+        
+        .file-upload-btn input[type=file] {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+            
+        }
+        
+        /* Separador na barra lateral */
+        .sidebar-divider {
+            height: 1px;
+            background-color: rgba(255, 255, 255, 0.2);
+            margin: 10px 15px;
+        }
+        
+        /* Estilo para o campo de URL com domínio reconhecido */
+        .url-input-container.valid-domain {
+            position: relative;
+        }
+        
+        .url-input-container.valid-domain::after {
+            content: 'check_circle';
+            font-family: 'Material Icons';
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #4CAF50;
+            font-size: 20px;
+        }
+        
+        .url-input-container.invalid-domain::after {
+            content: 'error';
+            font-family: 'Material Icons';
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #da2518;
+            font-size: 20px;
+        }
+        
+        /* Paleta de cores em círculo perfeito */
+        .color-palette {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            width: 300px;
+            height: 300px;
+            margin: 20px auto;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,255,255,1) 0%, rgba(245,245,245,1) 100%);
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+        }
+        
+        .color-option {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid #fff;
+            cursor: pointer;
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        .color-option:hover {
+            transform: scale(1.2);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        
+        .color-option.selected {
+            border: 3px solid #000;
+            transform: scale(1.2);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+
+        }
+    </style>
 <body>
     <!-- Barra lateral de ferramentas -->
     <div class="sidebar">
@@ -823,5 +1402,6 @@
 </body>
 
 </html>
+
 
 
