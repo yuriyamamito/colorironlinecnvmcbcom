@@ -1,38 +1,58 @@
 @font-face {
-    font-family: Gotham Rounded, Nunito, Helvetica Neue, Helvetica, Arial, sans-serif;
-    src: url(./files/fonts/GothamRounded-Medium.otf) format("opentype");
+    font-family: "Gotham Rounded Medium";
+    src: url("https://db.onlinewebfonts.com/t/dffb2b80813d195d26fa4d2aad48b059.eot");
+    src: url("https://db.onlinewebfonts.com/t/dffb2b80813d195d26fa4d2aad48b059.eot?#iefix")format("embedded-opentype"),
+    url("https://db.onlinewebfonts.com/t/dffb2b80813d195d26fa4d2aad48b059.woff2")format("woff2"),
+    url("https://db.onlinewebfonts.com/t/dffb2b80813d195d26fa4d2aad48b059.woff")format("woff"),
+    url("https://db.onlinewebfonts.com/t/dffb2b80813d195d26fa4d2aad48b059.ttf")format("truetype"),
+    url("https://db.onlinewebfonts.com/t/dffb2b80813d195d26fa4d2aad48b059.svg#Gotham Rounded Medium")format("svg");
+}
+
+@font-face {
+    font-family: "Gotham Rounded Bold";
+    src: url("https://db.onlinewebfonts.com/t/ae8f19f441b335c3fda30febf5069c5a.eot");
+    src: url("https://db.onlinewebfonts.com/t/ae8f19f441b335c3fda30febf5069c5a.eot?#iefix")format("embedded-opentype"),
+    url("https://db.onlinewebfonts.com/t/ae8f19f441b335c3fda30febf5069c5a.woff2")format("woff2"),
+    url("https://db.onlinewebfonts.com/t/ae8f19f441b335c3fda30febf5069c5a.woff")format("woff"),
+    url("https://db.onlinewebfonts.com/t/ae8f19f441b335c3fda30febf5069c5a.ttf")format("truetype"),
+    url("https://db.onlinewebfonts.com/t/ae8f19f441b335c3fda30febf5069c5a.svg#Gotham Rounded Bold")format("svg");
+}
+
+@font-face {
+    font-family: "Gotham Rounded", Gotham Rounded Medium, Nunito, Helvetica Neue, Helvetica, Arial, sans-serif;
+    src: url("./files/fonts/GothamRounded-Medium.otf") format("opentype");
     font-weight: 500;
     font-style: normal;
     font-display: swap;
 }
 @font-face {
     font-family: "Carro Nuvem Titulos 500", Nunito, Helvetica Neue, Helvetica, Arial, sans-serif;
-    src: url(./files/fonts/CarroNuvem-Titulos.otf) format("opentype");
+    src: url("./files/fonts/CarroNuvem-Titulos.") format("opentype");
     font-weight: 700;
     font-style: normal;
 }
 @font-face {
     font-family:Gotham Rounded, Nunito, Helvetica Neue, Helvetica, Arial, sans-serif;
-    src: url(./files/fonts/GothamRounded-Bold.otf) format("opentype");
+    src: url("./files/fonts/GothamRounded-Bold.otf") format("opentype");
     font-weight: 700;
     font-style: normal;
 }
 @font-face {
     font-family:Nunito, Helvetica Neue, Helvetica, Arial, sans-serif;
-    src: url(./files/fonts/Nunito-Regular.ttf) format("truetype");
+    src: url("./files/fonts/Nunito-Regular.ttf") format("truetype");
     font-weight: 400;
     font-style: normal;
     font-display: swap;
 }
 @font-face {
     font-family:Nunito, Helvetica Neue, Helvetica, Arial, sans-serif;
-    src: url(./files/fonts/Nunito-Bold.ttf) format("truetype");
+    src: url("./files/fonts/Nunito-Bold.ttf") format("truetype");
     font-weight: 700;
     font-style: normal;
     font-display: swap;
 }
 body {
-            font-family: HCo Gotham Rounded A, HCo Gotham Rounded B, Gotham Rounded, Nunito, Helvetica Neue, Helvetica, Arial, sans-serif;
+            font-family: HCo Gotham Rounded A, HCo Gotham Rounded B, Gotham Rounded Medium, Nunito, Helvetica Neue, Helvetica, Arial, sans-serif;
             margin: 0;
             padding: 0;
             background-color: #f5f5f5;
@@ -131,7 +151,7 @@ body {
             align-items: center;
             gap: 15px;
             font-weight: 400;
-            font-family: "Gotham Rounded", Nunito, Helvetica Neue, Helvetica, Arial, sans-serif;
+            font-family: "Gotham Rounded Medium", Nunito, Helvetica Neue, Helvetica, Arial, sans-serif;
         }
         
         .upload-section .url-input-container {
@@ -140,7 +160,7 @@ body {
             gap: 15px;
             width: 100%;
             justify-content: center;
-            font-family: Gotham Rounded, Nunito, Helvetica Neue, Helvetica, Arial, sans-serif;
+            font-family: Gotham Rounded Medium, Nunito, Helvetica Neue, Helvetica, Arial, sans-serif;
         }
         
         .upload-section input[type="text"] {
@@ -149,7 +169,7 @@ body {
             padding: 10px;
             border-radius: 30px;
             border: 1px solid #550e9b;
-            font-family: Gotham Rounded, Nunito, Helvetica Neue, Helvetica, Arial, sans-serif;
+            font-family: Gotham Rounded Medium, Nunito, Helvetica Neue, Helvetica, Arial, sans-serif;
         }
         
         .upload-section button {
@@ -221,7 +241,7 @@ body {
             border-radius: 30px;
             cursor: pointer;
             font-weight: 500;
-            font-family: "Gotham Rounded", Nunito, Helvetica Neue, Helvetica, Arial, sans-serif;
+            font-family: "Gotham Rounded Medium", Nunito, Helvetica Neue, Helvetica, Arial, sans-serif;
             transition: background-color 0.3s, box-shadow 0.3s ease-in-out;
         }
         
@@ -289,7 +309,7 @@ body {
             border-radius: 30px;
             cursor: pointer;
             font-weight: 500;
-            font-family: "Gotham Rounded", Nunito, Helvetica Neue, Helvetica, Arial, sans-serif;
+            font-family: "Gotham Rounded Medium", Nunito, Helvetica Neue, Helvetica, Arial, sans-serif;
             transition: background-color 0.3s, box-shadow 0.3s ease-in-out;
         }
         
@@ -388,7 +408,7 @@ body {
             padding: 8px 12px;
             border: 1px solid #ddd;
             border-radius: 20px;
-            font-family: 'Nunito', sans-serif;
+            font-family: 'Gotham Rounded Medium', sans-serif;
             transition: box-shadow 0.3s ease-in-out;
         }
         
@@ -605,4 +625,5 @@ body {
             border: 3px solid #000;
             transform: scale(1.2);
             box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+
         }
