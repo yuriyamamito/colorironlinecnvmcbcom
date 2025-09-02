@@ -20,33 +20,33 @@
 
 @font-face {
     font-family: "Gotham Rounded", Gotham Rounded Medium, Nunito, Helvetica Neue, Helvetica, Arial, sans-serif;
-    src: url("./files/fonts/GothamRounded-Medium.otf") format("opentype");
+    src: url("/files/fonts/GothamRounded-Medium.otf") format("opentype");
     font-weight: 500;
     font-style: normal;
     font-display: swap;
 }
 @font-face {
     font-family: "Carro Nuvem Titulos 500", Nunito, Helvetica Neue, Helvetica, Arial, sans-serif;
-    src: url("./files/fonts/CarroNuvem-Titulos.otf") format("opentype");
+    src: url("/files/fonts/CarroNuvem-Titulos.otf") format("opentype");
     font-weight: 700;
     font-style: normal;
 }
 @font-face {
     font-family:Gotham Rounded, Nunito, Helvetica Neue, Helvetica, Arial, sans-serif;
-    src: url("./files/fonts/GothamRounded-Bold.otf") format("opentype");
+    src: url("/files/fonts/GothamRounded-Bold.otf") format("opentype");
     font-weight: 700;
     font-style: normal;
 }
 @font-face {
     font-family:Nunito, Helvetica Neue, Helvetica, Arial, sans-serif;
-    src: url("./files/fonts/Nunito-Regular.ttf") format("truetype");
+    src: url("/files/fonts/Nunito-Regular.ttf") format("truetype");
     font-weight: 400;
     font-style: normal;
     font-display: swap;
 }
 @font-face {
     font-family:Nunito, Helvetica Neue, Helvetica, Arial, sans-serif;
-    src: url("./files/fonts/Nunito-Bold.ttf") format("truetype");
+    src: url("/files/fonts/Nunito-Bold.ttf") format("truetype");
     font-weight: 700;
     font-style: normal;
     font-display: swap;
@@ -627,4 +627,5 @@ body {
             box-shadow: 0 5px 15px rgba(0,0,0,0.3);
 
         }
+
 
